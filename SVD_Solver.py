@@ -63,11 +63,8 @@ def main():
       A[i, j] = float(input(f"Enter element A[{i+1},{j+1}]: "))
 
   u, s, v, cond_num, A_inv = svd_solver(A)
-  A1 = (u @ s @ v)
   u1,s1,v1 = np.linalg.svd(A)
-  print('\nA:')
-  print(A1)
-  print('\n___________________________')
+  
   print("\nU:")
   print(u)
   print('\n___________________________')
