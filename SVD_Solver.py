@@ -4,39 +4,35 @@ def svd_solver(A):
     """Calculate SVD for a general NXM matrix.
     
     Args:
-        A (np.ndarray): Input matrix of shape (m, n).
+        A : Input matrix of shape (m, n).
         
     Returns:
-        U (np.ndarray): Left singular vectors of shape (m, m).
-        S (np.ndarray): Singular values in descending order of shape (min(m, n),).
-        Vt (np.ndarray): Right singular vectors of shape (n, n).
+        U : Left singular vectors of shape (m, m).
+        S : Singular values in descending order of shape (min(m, n),).
+        Vt : Right singular vectors of shape (n, n).
         condition_number (float): Condition number of the matrix.
-        A_inv (np.ndarray): Inverse of the matrix A.
+        A_inv : Inverse of the matrix A.
     """
     m, n = A.shape
     
-    # Step 1: Compute A^TA and ATA^T
-    ATA = np.dot(A.T, A)
-    AAT = np.dot(A, A.T)
-    
     # Step 2: Compute eigenvalues and eigenvectors of ATA and AAT
-    eigvals_ATA, eigvecs_ATA = np.linalg.eigh(ATA)
-    eigvals_AAT, eigvecs_AAT = np.linalg.eigh(AAT)
+    eigen_val_U, eigen_vec_U = np.linalg.eigh(np.dot(A,A.T))
+    eigen_val_V, eigen_vec_V = np.linalg.eigh(np.dot(A.T,A))
     
     # Step 3: Sort eigenvalues in descending order
-    eigvals_ATA = np.flip(eigvals_ATA)
-    eigvecs_ATA = np.fliplr(eigvecs_ATA)
-    eigvals_AAT = np.flip(eigvals_AAT)
-    eigvecs_AAT = np.fliplr(eigvecs_AAT)
+    eigvals_U = np.flip(eigen_val_U)
+    eigvecs_U = np.fliplr(eigen_vec_U)
+    eigvals_V = np.flip(eigen_val_V)
+    eigvecs_V = np.fliplr((eigen_vec_V))
     
     # Step 4: Compute singular values and sort by magnitude
-    sigma = np.sqrt(eigvals_ATA)
+    sigma = np.sqrt(eigvals_V)
     singular_value_indices = np.argsort(sigma)[::-1]
     sigma = sigma[singular_value_indices]
     
     # Step 5: Compute U, S, and Vt
-    U = eigvecs_AAT.T[:, singular_value_indices]
-    Vt = eigvecs_ATA[:, singular_value_indices]
+    U = eigvecs_U[:, singular_value_indices]
+    Vt = eigvecs_V.T[:, singular_value_indices]
     S = np.zeros((m, n))
     np.fill_diagonal(S, sigma)
     
@@ -44,14 +40,13 @@ def svd_solver(A):
     condition_number = np.max(sigma) / np.min(sigma)
     
     # Step 7: Calculate pseudo-inverse
-    tolerance = min(m, n) * np.finfo(float).eps * np.max(sigma)
-    S_inv = np.where(sigma > tolerance, 1/sigma, 0)
-    A_inv = Vt.T @ np.diag(S_inv) @ U.T
+    S_inv = np.linalg.inv(S)
+    try:
+      A_inv = np.dot(Vt,S_inv,U.T)
+    except np.linalg.LinAlgError:
+      A_inv = None
     
-    if np.any(sigma < tolerance):
-        raise ValueError("Matrix is singular and doesn't have an inverse.")
-    
-    return U.T, sigma, Vt.T, condition_number, A_inv
+    return U, sigma, Vt, condition_number, A_inv
 
 def main():
   rows = int(input("Enter the number of rows in matrix A: "))
