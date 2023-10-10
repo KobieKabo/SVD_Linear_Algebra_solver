@@ -23,10 +23,6 @@ def svd_solver(A):
     # Calculate condition number
     sigma = np.sqrt(eigen_val_U)
     condition_number = (max(sigma) / min(sigma))
-    # Compute Sigma
-    sigma = np.zeros((m,n))
-    for i in range(min(len(eigen_val_U),len(eigen_val_V))):
-      sigma[i,i] = np.sqrt(eigen_val_U[i])
     
     # Sort eigenval & eigenvec 
     sort_U = np.argsort(eigen_val_U)[::-1]
@@ -38,22 +34,24 @@ def svd_solver(A):
     eigen_val_V = eigen_val_V[sort_V]
     V = eigen_vec_V[:,sort_V]
     
+    # Compute Sigma
+    sigma = np.zeros((m,n))
+    for i in range(min(len(eigen_val_U),len(eigen_val_V))):
+      sigma[i,i] = np.sqrt(eigen_val_U[i])
+    
     # Calculate inverse
-    try:
-      for i in range(min(n,m)):
-        if sigma[i][i] == 0:
-          raise Exception(
-            'Error: Matrix is singular & has no inverse.')
-      if (np.diag(sigma)).any() == 0:
+    for i in range(min(n,m)):
+      if sigma[i][i] == 0:
         raise Exception(
-          'Error: Matrix is singular & has no inverse.')
-      else:
-        sigma_inv = np.zeros(n,m)
-        for i in range(min(n,m)):
-          sigma_inv[i][i] == 1/sigma[i][i]
+          A_inv = 'Error: Matrix is singular & has no inverse.')
+    if (np.diag(sigma)).any() == 0:
+      raise Exception(
+        A_inv = 'Error: Matrix is singular & has no inverse.')
+    else:
+      sigma_inv = np.zeros((n,m))
+      for i in range(min(n,m)):
+        sigma_inv[i][i] == 1/sigma[i][i]
         A_inv = V @ sigma_inv @ U.T
-    except:
-      A_inv = 'Error: Matrix is singular & has no inverse.'
     
     return U, sigma, V, condition_number, A_inv
 
