@@ -1,4 +1,5 @@
 import numpy as np
+from SVD_Solver import svd_solver as mysvd
 
 def ones(mA,boundary):
   #finds ones and negative ones to fill the A matrix
@@ -16,8 +17,7 @@ def ones(mA,boundary):
           mA [i][j]=1;
         elif i==j+1:
           mA [i][j]=-1;
-  
-
+          
   return mA
 
 def matA(total_spring,total_mass,boundary):
@@ -46,29 +46,23 @@ def evec(mA,mC,mass):
 
   return mE, mU, mK
 
-def msvd(m):
-  #function to find singular value decompostion
-  u, s, vh =np.linalg.svd(m)
-  cond_num=np.max(s)/np.min(s)
-
-  return s, cond_num
-
 def final_matrices(elong,mD,mA,springc,boundary,mC,mK):
   #Displays final results and reasoning
-  eigA,cond_numA=msvd(mA)
-  eigAt,cond_numAt=msvd(mA.transpose())
-  eigC,cond_numC=msvd(mC)
-  eigK,cond_numK=msvd(mK)
+  U_A,sigma_A,V_A,cond_numA,A_inv = mysvd(mA)
+  U_At,sigma_At,V_At,cond_numAt,At_inv = mysvd(mA.T)
+  U_C,sigma_C,V_C,cond_numC,C_inv = mysvd(mC)
+  U_K,sigma_K,V_K,cond_numK,K_inv = mysvd(mK)
+
 
   
   print("Your results are: ")
   print("The mass displacements are:\n",mD, "\n")
   print("The spring elongation is:\n",elong, "\n")
-  print("The singular values and condition number for the A matrix are:\n",eigA,"\t",cond_numA)
-  print("The singular values and condition number for the A matrix transposed are:\n",eigAt,"\t",cond_numAt)
-  print("The singular values and condition number for the spring constant matrix are:\n",eigC,"\t",cond_numC)
+  print("The singular values and condition number for the A matrix are:\n",sigma_A,"\t",cond_numA)
+  print("The singular values and condition number for the A matrix transposed are:\n",sigma_At,"\t",cond_numAt)
+  print("The singular values and condition number for the spring constant matrix are:\n",sigma_C,"\t",cond_numC)
   print("The K matrix is:\n",mK)
-  print("The singular values and condition number for the K matrix are:\n",eigK,"\t",cond_numK)
+  print("The singular values and condition number for the K matrix are:\n",sigma_K,"\t",cond_numK)
   print("\n")
 
   if boundary==3:
@@ -83,9 +77,7 @@ def final_matrices(elong,mD,mA,springc,boundary,mC,mK):
 def main():
   print("Please enter a boundary for the equation.\nEnter 1 for one fixed end.\nEnter 2 for two fixed ends.\nEnter 3 for no fixed ends.\n")
   boundary=int(input())
-
-  #print("Please enter the number of springs\n")
-  #total_spring=int(input())
+  
   print("Please enter the number of masses\n")
   total_mass=int(input())
 

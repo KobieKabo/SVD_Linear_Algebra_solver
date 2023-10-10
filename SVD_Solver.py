@@ -1,4 +1,5 @@
 import numpy as np
+# Jakob Long, JRL4725
 
 def svd_solver(A):
     """Calculate SVD for a general NXM matrix.
@@ -9,48 +10,66 @@ def svd_solver(A):
     Returns:
         U : Left singular vectors of shape (m, m).
         S : Singular values in descending order of shape (min(m, n),).
-        Vt : Right singular vectors of shape (n, n).
-        condition_number (float): Condition number of the matrix.
+        V : Right singular vectors of shape (n, n).
+        condition_number : Condition number of the matrix.
         A_inv : Inverse of the matrix A.
     """
-    m, n = A.shape
+    m,n = A.shape
     
-    # Step 2: Compute eigenvalues and eigenvectors of ATA and AAT
+    # Compute eigenvalues and eigenvectors of U and V
     eigen_val_U, eigen_vec_U = np.linalg.eigh(np.dot(A,A.T))
     eigen_val_V, eigen_vec_V = np.linalg.eigh(np.dot(A.T,A))
     
-    # Step 3: Sort eigenvalues in descending order
-    eigvals_U = np.flip(eigen_val_U)
-    eigvecs_U = np.fliplr(eigen_vec_U)
-    eigvals_V = np.flip(eigen_val_V)
-    eigvecs_V = np.fliplr((eigen_vec_V))
+    # Calculate condition number
+    sigma = np.sqrt(eigen_val_U)
+    condition_number = (max(sigma) / min(sigma))
+    # Compute Sigma
+    sigma = np.zeros((m,n))
+    for i in range(min(len(eigen_val_U),len(eigen_val_V))):
+      sigma[i,i] = np.sqrt(eigen_val_U[i])
     
-    # Step 4: Compute singular values and sort by magnitude
-    sigma = np.sqrt(eigvals_V)
-    singular_value_indices = np.argsort(sigma)[::-1]
-    sigma = sigma[singular_value_indices]
+    # Sort eigenval & eigenvec 
+    sort_U = np.argsort(eigen_val_U)[::-1]
+    sort_V = np.argsort(eigen_val_V)[::-1] 
     
-    # Step 5: Compute U, S, and Vt
-    U = eigvecs_U[:, singular_value_indices]
-    Vt = eigvecs_V.T[:, singular_value_indices]
-    S = np.zeros((m, n))
-    np.fill_diagonal(S, sigma)
+    eigen_val_U = eigen_val_U[sort_U]
+    U = eigen_vec_U[:,sort_U]
     
-    # Step 6: Calculate condition number
-    condition_number = np.max(sigma) / np.min(sigma)
+    eigen_val_V = eigen_val_V[sort_V]
+    V = eigen_vec_V[:,sort_V]
     
-    # Step 7: Calculate pseudo-inverse
-    S_inv = np.linalg.inv(S)
+    # Calculate inverse
     try:
-      A_inv = np.dot(Vt,S_inv,U.T)
-    except np.linalg.LinAlgError:
-      A_inv = None
+      for i in range(min(n,m)):
+        if sigma[i][i] == 0:
+          raise Exception(
+            'Error: Matrix is singular & has no inverse.')
+      if (np.diag(sigma)).any() == 0:
+        raise Exception(
+          'Error: Matrix is singular & has no inverse.')
+      else:
+        sigma_inv = np.zeros(n,m)
+        for i in range(min(n,m)):
+          sigma_inv[i][i] == 1/sigma[i][i]
+        A_inv = V @ sigma_inv @ U.T
+    except:
+      A_inv = 'Error: Matrix is singular & has no inverse.'
     
-    return U, sigma, Vt, condition_number, A_inv
+    return U, sigma, V, condition_number, A_inv
 
 def main():
-  rows = int(input("Enter the number of rows in matrix A: "))
-  cols = int(input("Enter the number of columns in matrix A: "))
+  while True:
+    try:
+      rows = int(input("Enter the number of rows in matrix A: "))
+      cols = int(input("Enter the number of columns in matrix A: "))
+      if rows <= 0 or cols <= 0:
+        print('Please input a valid integer, of 1 or larger.')
+        continue
+      break
+    except ValueError:
+      print('Enter a valid integer of 1 or larger.')
+      continue
+  
   A = np.zeros((rows, cols))
 
   for i in range(rows):
@@ -60,6 +79,12 @@ def main():
   u, s, v, cond_num, A_inv = svd_solver(A)
   u1,s1,v1 = np.linalg.svd(A)
   
+  print("\nA:")
+  print(A)
+  print('\n___________________________')
+  print('\nA Reconstruction:')
+  print(u@s@v.T)
+  print('\n___________________________')
   print("\nU:")
   print(u)
   print('\n___________________________')
@@ -67,7 +92,7 @@ def main():
   print(s)
   print('\n___________________________')
   print("\nV:")
-  print(v)
+  print(v.T)
   print('\n___________________________')
   print("\nCondition Numbers:")
   print(cond_num)
@@ -84,6 +109,7 @@ def main():
   print("\nBlackBox V:")
   print(v1)
   print('\n___________________________')
+  
 
 if __name__=="__main__":
   main()
