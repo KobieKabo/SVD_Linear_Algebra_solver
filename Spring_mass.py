@@ -1,5 +1,6 @@
 import numpy as np
 from SVD_Solver import svd_solver as mysvd
+# Jakob Long, JRL4725
 
 def ones(mA,boundary):
   #finds ones and negative ones to fill the A matrix
