@@ -14,7 +14,7 @@ The terminal will then prompt you for input.
 
 ## Scripts
 ### `SVD_solver.py`
-This script prefors SVD on a given matrix. Solving, A = U &Sigma; V<sup>T</sup> 
+This script preforms SVD on a given matrix. Solving, A = U &Sigma; V<sup>T</sup> 
 
 The SVD method decomposes a matrix into three other matrices: U, Sigma, and V. U is the left eigen-vector matrix, V is the right eigenvector matrix, and sigma is a diagonal matrix containing the square root of the eigen values of AA<sup>T</sup> and A<sup>T</sup>A, which should be equivalent. The script additionally prints a comparison to the numpy SVD blackbox solver.
 
